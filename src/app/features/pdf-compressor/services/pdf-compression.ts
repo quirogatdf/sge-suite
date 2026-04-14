@@ -104,11 +104,14 @@ export class PdfCompressionService {
 
         // Convert to JPEG
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        console.log(' JPEG size:', Math.floor(dataUrl.length * 0.75));
         const base64 = dataUrl.split(',')[1];
         const jpgBytes = this.base64ToUint8Array(base64);
+        console.log(' JPG bytes:', jpgBytes.length);
 
         // Embed in new PDF
         const jpg = await newPdfDoc.embedJpg(jpgBytes);
+        console.log(' Embedded image:', jpg.width, 'x', jpg.height);
         const pageWidth = viewport.width;
         const pageHeight = viewport.height;
         const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);

@@ -1,5 +1,6 @@
 import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { PDFDocument } from 'pdf-lib';
 import {
   PdfFile,
   CompressionResult,
@@ -9,7 +10,7 @@ import {
   CompressionState,
 } from '../models/pdf-compression.types';
 
-// PDF.js types - simplified
+// PDF.js types
 interface WindowPdfjsLib {
   getDocument: (options: { data: Uint8Array }) => any;
   GlobalWorkerOptions: { workerSrc: string };
@@ -44,6 +45,8 @@ export class PdfCompressionService {
       progress: { percent: 0, stage: 'reading' },
     });
 
+    const startTime = Date.now();
+
     try {
       // Get PDF.js from window (loaded from CDN)
       const pdfjs = window.pdfjsLib;
@@ -51,33 +54,84 @@ export class PdfCompressionService {
         throw new Error('PDF.js no está cargado');
       }
 
-      // Load PDF
+      // Get compression settings
+      const { scale, jpegQuality } = this.getCompressionSettings(level);
+
+      // Load PDF with PDF.js
       const pdfDoc = await pdfjs.getDocument({
         data: new Uint8Array(file.buffer),
       });
 
-      this.state.set({
-        status: 'compressing',
-        progress: { percent: 10, stage: 'reading' },
-      });
-
-      // Get compression settings
-      const scale = this.getScale(level);
-
-      // Recompress by rendering pages to images
-      const compressedData = await this.recompressPdf(pdfDoc, scale, level);
+      const numPages = pdfDoc.numPages;
 
       this.state.set({
         status: 'compressing',
-        progress: { percent: 100, stage: 'writing' },
+        progress: { percent: 5, stage: 'reading' },
       });
+
+      // Create new PDF with pdf-lib
+      const newPdfDoc = await PDFDocument.create();
+
+      // Process each page
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: scale });
+
+        // Create canvas for rendering
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext('2d')!;
+
+        // Render page to canvas as JPEG
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+          canvas: canvas,
+        });
+
+        // Convert canvas to JPEG with compression
+        const imageData = canvas.toDataURL('image/jpeg', jpegQuality);
+        const base64Data = imageData.split(',')[1];
+        const jpegBytes = this.base64ToUint8Array(base64Data);
+
+        // Embed JPEG in new PDF
+        const jpgImage = await newPdfDoc.embedJpg(jpegBytes);
+
+        // Add page with same dimensions
+        const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
+        newPage.drawImage(jpgImage, {
+          x: 0,
+          y: 0,
+          width: viewport.width,
+          height: viewport.height,
+        });
+
+        // Update progress
+        const progress = 10 + Math.floor((i / numPages) * 80);
+        this.state.set({
+          status: 'compressing',
+          progress: { percent: progress, stage: 'compressing' },
+        });
+      }
+
+      // Save compressed PDF
+      this.state.set({
+        status: 'compressing',
+        progress: { percent: 95, stage: 'writing' },
+      });
+
+      const compressedPdfBytes = await newPdfDoc.save();
 
       const result: CompressionResult = {
         originalSize: file.size,
-        compressedSize: compressedData.length,
-        outputBuffer: compressedData,
+        compressedSize: compressedPdfBytes.length,
+        outputBuffer: compressedPdfBytes,
         filename: '',
       };
+
+      const elapsed = Date.now() - startTime;
+      console.log(`PDF compressión completada en ${elapsed}ms`);
 
       this.state.set({ status: 'completed', result });
     } catch (error) {
@@ -91,59 +145,26 @@ export class PdfCompressionService {
     }
   }
 
-  private getScale(level: CompressionLevel): number {
+  private getCompressionSettings(level: CompressionLevel): { scale: number; jpegQuality: number } {
     switch (level) {
       case 'maximum':
-        return 0.5;
+        return { scale: 0.75, jpegQuality: 0.5 };
       case 'recommended':
-        return 1.0;
+        return { scale: 1.0, jpegQuality: 0.75 };
       case 'low':
-        return 1.5;
+        return { scale: 1.5, jpegQuality: 0.9 };
       default:
-        return 1.0;
+        return { scale: 1.0, jpegQuality: 0.75 };
     }
   }
 
-  private async recompressPdf(
-    pdfDoc: any,
-    scale: number,
-    level: CompressionLevel,
-  ): Promise<Uint8Array> {
-    const numPages = pdfDoc.numPages;
-    const pageImages: ImageData[] = [];
-
-    // Render each page to canvas
-    for (let i = 1; i <= numPages; i++) {
-      const page = await pdfDoc.getPage(i);
-      const viewport = page.getViewport({ scale: scale * 1.5 });
-
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d')!;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-        canvas: canvas,
-      });
-
-      pageImages.push(context.getImageData(0, 0, canvas.width, canvas.height));
-
-      this.state.set({
-        status: 'compressing',
-        progress: { percent: 10 + Math.floor((i / numPages) * 60), stage: 'compressing' },
-      });
+  private base64ToUint8Array(base64: string): Uint8Array {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-
-    // Return data from first page as placeholder
-    // Full implementation would create new PDF from images using pdf-lib
-    const firstPage = pageImages[0];
-    if (!firstPage) {
-      throw new Error('No pages to compress');
-    }
-
-    return new Uint8Array(firstPage.data.buffer);
+    return bytes;
   }
 
   reset(): void {

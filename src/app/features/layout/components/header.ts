@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface NavItem {
@@ -17,47 +17,51 @@ interface NavItem {
           <img src="/img/logos/somos.png" alt="SOMOS" class="somos-logo" />
         </a>
 
-        <!-- Navegación desktop -->
-        <nav class="nav-main hidden md:flex" role="navigation" aria-label="Navegación principal">
-          @for (item of navItems; track item.route) {
-            <a
-              [routerLink]="item.route"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: item.route === '/' }"
-              class="nav-link"
-            >
-              {{ item.label }}
-            </a>
-          }
-        </nav>
+        <!-- Navegación desktop (visible solo en desktop) -->
+        @if (isDesktop()) {
+          <nav class="nav-main" role="navigation" aria-label="Navegación principal">
+            @for (item of navItems; track item.route) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.route === '/' }"
+                class="nav-link"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </nav>
+        }
 
-        <!-- Botón hamburguesa (mobile) -->
-        <button class="hamburger md:hidden" (click)="toggleMenu()" aria-label="Abrir menú">
-          @if (menuOpen()) {
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          } @else {
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          }
-        </button>
+        <!-- Botón hamburguesa (visible solo en mobile) -->
+        @if (!isDesktop()) {
+          <button class="hamburger" (click)="toggleMenu()" aria-label="Abrir menú">
+            @if (menuOpen()) {
+              <svg class="hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            } @else {
+              <svg class="hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            }
+          </button>
+        }
       </div>
 
       <!-- Menú móvil desplegable -->
-      @if (menuOpen()) {
-        <nav class="mobile-menu md:hidden" role="navigation" aria-label="Menú móvil">
+      @if (!isDesktop() && menuOpen()) {
+        <nav class="mobile-menu" role="navigation" aria-label="Menú móvil">
           @for (item of navItems; track item.route) {
             <a
               [routerLink]="item.route"
@@ -83,7 +87,7 @@ interface NavItem {
           width="200"
           height="100"
         />
-        <h1 class="banner-title">Secretaría de Gestión Educativa</h1>
+        <h1 class="banner-title pt-1">Secretaría de Gestión Educativa</h1>
       </div>
     </div>
   `,
@@ -169,9 +173,66 @@ interface NavItem {
       }
 
       /* ----------------------------------------
-       Pasador de Dependencia (Banner)
-       1920px de ancho x 400px de alto
-       ---------------------------------------- */
+         Botón Hamburguesa
+         ---------------------------------------- */
+      .hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: none;
+        border: none;
+        color: #666666;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .hamburger:hover {
+        color: #ff6600;
+      }
+
+      .hamburger-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      /* ----------------------------------------
+         Menú Móvil
+         ---------------------------------------- */
+      .mobile-menu {
+        display: flex;
+        flex-direction: column;
+        background-color: #ffffff;
+        border-top: 1px solid #e5e5e5;
+        padding: 0.5rem;
+      }
+
+      .mobile-nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #666666;
+        text-decoration: none;
+        text-transform: uppercase;
+        border-radius: 0.25rem;
+        transition: all 0.15s;
+      }
+
+      .mobile-nav-link:hover {
+        background-color: #f5f5f5;
+        color: #ff6600;
+      }
+
+      .mobile-nav-link.active {
+        color: #ff6600;
+        font-weight: 700;
+      }
+
+      /* ----------------------------------------
+         Pasador de Dependencia (Banner)
+         1920px de ancho x 400px de alto
+         ---------------------------------------- */
       .dependency-banner {
         width: 100%;
         height: 400px;
@@ -293,12 +354,26 @@ interface NavItem {
 })
 export class HeaderComponent {
   protected readonly menuOpen = signal(false);
+  protected readonly isDesktop = signal(true);
 
   protected readonly navItems: NavItem[] = [
     { label: 'INICIO', route: '/' },
     { label: 'HERRAMIENTAS', route: '/herramientas' },
     { label: 'SOPORTE', route: '/soporte' },
   ];
+
+  constructor() {
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize')
+  protected onResize(): void {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize(): void {
+    this.isDesktop.set(window.innerWidth >= 768);
+  }
 
   protected toggleMenu(): void {
     this.menuOpen.update((v) => !v);

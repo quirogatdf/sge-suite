@@ -82,7 +82,3 @@ El proyecto implementa un sistema de diseño basado en el manual de marca oficia
 ## 📝 Licencia
 
 En desarrollo - Todos los derechos reservados
-
-## 👥 Contacto
-
-Para soporte técnico: soporte@gobierno.tdf.gob.ar

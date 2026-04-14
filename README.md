@@ -1,59 +1,86 @@
-# CompresorOnline
+# SGE Suite - Sistema de Gestión Gubernamental
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Plataforma oficial del Gobierno de Tierra del Fuego para la gestión de documentos y herramientas digitales.
 
-## Development server
+## 🚀 Características
 
-To start a local development server, run:
+- **Compresión de PDFs**: Herramienta para reducir el tamaño de archivos PDF manteniendo la calidad
+- **Procesamiento local**: Los archivos se procesan 100% en el navegador del usuario
+- **Diseño responsivo**: Adaptado para escritorio y dispositivos móviles
+- **Sistema de diseño**: Implementación del manual de marca gubernamental
 
-```bash
-ng serve
-```
+## 🛠️ Tecnologías
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Framework**: Angular 21 (standalone components, signals)
+- **Estilos**: Tailwind CSS 4
+- **Procesamiento PDF**: Ghostscript WASM (@okathira/ghostpdl-wasm)
+- **Gestor de paquetes**: Bun
 
-## Code scaffolding
+## 📋 Requisitos
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Node.js 18+
+- Bun (gestor de paquetes recomendado)
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## 🔧 Instalación
 
 ```bash
-ng build
+# Instalar dependencias
+bun install
+
+# Iniciar servidor de desarrollo
+bun start
+
+# Construir para producción
+bun run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 🏗️ Estructura del Proyecto
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```
+src/
+├── app/
+│   ├── features/
+│   │   ├── layout/          # Header, Footer, componentes globales
+│   │   ├── home/            # Página principal
+│   │   ├── pdf-compressor/  # Herramienta de compresión PDF
+│   │   ├── tools/           # Listado de herramientas
+│   │   └── support/         # Página de soporte
+│   └── core/                # Servicios, modelos, utilidades
+├── public/
+│   ├── fonts/               # Fuentes personalizadas
+│   └── img/                 # Imágenes y logos
+└── styles.css               # Tokens de diseño globales
 ```
 
-## Running end-to-end tests
+## 📄 Scripts Disponibles
 
-For end-to-end (e2e) testing, run:
+| Comando         | Descripción                             |
+| --------------- | --------------------------------------- |
+| `bun start`     | Inicia el servidor de desarrollo        |
+| `bun run build` | Construye la aplicación para producción |
+| `bun run watch` | Construcción en modo watch              |
+| `bun run test`  | Ejecuta las pruebas unitarias           |
 
-```bash
-ng e2e
-```
+## 🎨 Sistema de Diseño
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+El proyecto implementa un sistema de diseño basado en el manual de marca oficial del Gobierno de Tierra del Fuego:
 
-## Additional Resources
+- **Tipografía**: Passenger Sans con interletrado -25%
+- **Colores oficiales**:
+  - Naranja: `#FF6600`
+  - Gris texto: `#666666`
+  - Gris footer: `#F1F2F2`
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 🔐 Seguridad
+
+- Los archivos PDF se procesan completamente en el navegador del cliente
+- No se envía ningún documento a servidores externos
+- No se almacenan datos personales
+
+## 📝 Licencia
+
+Todos los derechos reservados - Gobierno de Tierra del Fuego
+
+## 👥 Contacto
+
+Para soporte técnico: soporte@gobierno.tdf.gob.ar

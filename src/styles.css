@@ -1,3 +1,327 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* ========================================
+   Passenger Sans - Custom Font Face
+   ======================================== */
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-ThinItalic.woff2') format('woff2');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Extralight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-ExtralightItalic.woff2') format('woff2');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-LightItalic.woff2') format('woff2');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-MediumItalic.woff2') format('woff2');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Semibold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-SemiboldItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Black.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-BlackItalic.woff2') format('woff2');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Extrablack.woff2') format('woff2');
+  font-weight: 850;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-ExtrablackItalic.woff2') format('woff2');
+  font-weight: 850;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-Ultra.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Passenger Sans';
+  src: url('/fonts/PassengerSans-UltraItalic.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ========================================
+   Design Tokens - Manual de Marca Gubernamental
+   ======================================== */
+@theme {
+  /* ----------------------------------------
+     Tipografía
+     ---------------------------------------- */
+  --font-sans: 'Passenger Sans', system-ui, sans-serif;
+  --tracking-tightest: -0.025em; /* -25% interletrado */
+
+  /* ----------------------------------------
+     Colores Oficiales Gubernamentales
+     ---------------------------------------- */
+
+  /* Naranja Oficial */
+  --color-primary: #ff6600;
+  --color-primary-hover: #e55c00;
+  --color-primary-light: #ff8533;
+
+  /* Gris Texto / Subtítulos */
+  --color-text-secondary: #666666;
+  --color-text-muted: #666666;
+
+  /* Gris Franja Footer */
+  --color-footer-gray: #f1f2f2;
+
+  /* Botones Redes Sociales */
+  --color-social-bg: rgb(204, 204, 204);
+  --color-social-icon: #454444;
+
+  /* Neutros */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Escala de grises */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #a3a3a3;
+  --color-gray-500: #737373;
+  --color-gray-600: #525252;
+  --color-gray-700: #404040;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
+
+  /* ----------------------------------------
+     Layout Tokens (1920px estándar)
+     ---------------------------------------- */
+  --width-container: 1920px;
+  --height-banner: 400px;
+  --height-footer-top: 264px;
+  --height-footer-bottom: 150px;
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.25; /* -25% interlineado */
+  letter-spacing: var(--tracking-tightest); /* -25% interletrado */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-white);
+  color: var(--color-gray-900);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ========================================
+   Utility Classes - Sistema de Diseño
+   ======================================== */
+
+/* Texto con color oficial */
+.text-primary {
+  color: var(--color-primary);
+}
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-white {
+  color: var(--color-white);
+}
+
+/* Fondo con colores oficiales */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+.bg-footer-gray {
+  background-color: var(--color-footer-gray);
+}
+.bg-white {
+  background-color: var(--color-white);
+}
+
+/* Botones de redes sociales */
+.btn-social {
+  width: 43px;
+  height: 43px;
+  background-color: var(--color-social-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-social:hover {
+  background-color: var(--color-gray-300);
+}
+
+.btn-social svg,
+.btn-social img {
+  width: 20px;
+  height: 20px;
+  color: var(--color-social-icon);
+}
+
+/* Container máximo estándar */
+.container-gov {
+  max-width: var(--width-container);
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Banner dependencias (1920x400) */
+.banner-dependency {
+  width: 100%;
+  height: 400px;
+  background-color: var(--color-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Footer strip heights */
+.footer-top {
+  height: 264px;
+  background-color: var(--color-footer-gray);
+}
+
+.footer-bottom {
+  height: 150px;
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}

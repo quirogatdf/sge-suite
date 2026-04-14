@@ -97,10 +97,23 @@ export class PdfCompressionService {
           canvas: canvas,
         });
 
-        // Check if canvas has content - debug
-        const isEmpty = !context.getImageData(0, 0, 1, 1).data[3];
-        if (isEmpty) {
-          console.warn(`Page ${i} rendered empty!`);
+        // Debug: Check canvas content
+        const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const hasContent = imgData.data.some((b) => b > 0);
+        console.log(
+          `Page ${i}: ${canvas.width}x${canvas.height}, hasContent: ${hasContent}`,
+          imgData.data.slice(0, 20),
+        );
+
+        // Get page dimensions early for use in empty case
+        const pageWidth = originalViewport.width;
+        const pageHeight = originalViewport.height;
+
+        if (!hasContent) {
+          console.warn(`Page ${i} rendered EMPTY! Skipping...`);
+          // Still add a blank page to maintain page count
+          newPdfDoc.addPage([pageWidth, pageHeight]);
+          continue;
         }
 
         // Convert canvas to PNG
@@ -110,10 +123,6 @@ export class PdfCompressionService {
 
         // Embed PNG in new PDF
         const pngImage = await newPdfDoc.embedPng(pngBytes);
-
-        // Use original PDF page dimensions (in points)
-        const pageWidth = originalViewport.width;
-        const pageHeight = originalViewport.height;
 
         const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
 

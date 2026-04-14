@@ -8,6 +8,14 @@ import {
   CompressionState,
 } from '../models/pdf-compression.types';
 
+// PDF.js types
+interface WindowPdfjsLib {
+  getDocument: (options: { data: Uint8Array }) => any;
+  GlobalWorkerOptions: { workerSrc: string };
+}
+
+declare const window: Window & { pdfjsLib?: WindowPdfjsLib };
+
 @Injectable({
   providedIn: 'root',
 })
@@ -37,31 +45,95 @@ export class PdfCompressionService {
     const startTime = Date.now();
 
     try {
-      // Load existing PDF
-      const pdfDoc = await PDFDocument.load(new Uint8Array(file.buffer));
+      const pdfjs = window.pdfjsLib;
+      if (!pdfjs) {
+        throw new Error('PDF.js no está cargado');
+      }
 
       this.state.set({
         status: 'compressing',
-        progress: { percent: 30, stage: 'compressing' },
+        progress: { percent: 5, stage: 'reading' },
       });
 
-      // Save with compression options
-      // - useObjectStreams: true - pack multiple objects into streams (30-50% smaller)
-      // - addDefaultPage: false - don't duplicate pages
-      const compressedPdfBytes = await pdfDoc.save({
-        useObjectStreams: level === 'maximum',
-        addDefaultPage: false,
+      // Load PDF with PDF.js
+      const pdfDoc = await pdfjs.getDocument({
+        data: new Uint8Array(file.buffer),
       });
 
-      const elapsed = Date.now() - startTime;
-      console.log(
-        `PDF compressión completada en ${elapsed}ms (${file.size} -> ${compressedPdfBytes.length})`,
-      );
+      const numPages = pdfDoc.numPages;
+      console.log(`PDF loaded: ${numPages} páginas`);
 
-      this.state.set({
-        status: 'compressing',
-        progress: { percent: 100, stage: 'writing' },
+      // Get scale based on compression level
+      const scale = this.getScale(level);
+      console.log(`Scale: ${scale}`);
+
+      // Create new PDF
+      const newPdfDoc = await PDFDocument.create();
+
+      // Process each page
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 1 });
+
+        // Create canvas at original size
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('No se pudo crear contexto de canvas');
+        }
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Render at specified scale
+        const renderViewport = page.getViewport({ scale: scale * 1.5 });
+
+        // Resize canvas if needed
+        canvas.width = renderViewport.width;
+        canvas.height = renderViewport.height;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Render
+        await page.render({
+          canvasContext: ctx,
+          viewport: renderViewport,
+          canvas: canvas,
+        }).promise;
+
+        console.log(`Page ${i}: rendered ${canvas.width}x${canvas.height}`);
+
+        // Convert to JPEG
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        const base64 = dataUrl.split(',')[1];
+        const jpgBytes = this.base64ToUint8Array(base64);
+
+        // Embed in new PDF
+        const jpg = await newPdfDoc.embedJpg(jpgBytes);
+        const newPage = newPdfDoc.addPage([renderViewport.width, renderViewport.height]);
+        newPage.drawImage(jpg, {
+          x: 0,
+          y: 0,
+          width: renderViewport.width,
+          height: renderViewport.height,
+        });
+
+        const progress = 10 + Math.floor((i / numPages) * 80);
+        this.state.set({
+          status: 'compressing',
+          progress: { percent: progress, stage: 'compressing' },
+        });
+      }
+
+      // Save
+      const compressedPdfBytes = await newPdfDoc.save({
+        useObjectStreams: true,
       });
+
+      console.log(`Compresión completada: ${file.size} -> ${compressedPdfBytes.length} bytes`);
 
       const result: CompressionResult = {
         originalSize: file.size,
@@ -72,6 +144,7 @@ export class PdfCompressionService {
 
       this.state.set({ status: 'completed', result });
     } catch (error) {
+      console.error('Error:', error);
       this.state.set({
         status: 'error',
         error: {
@@ -80,6 +153,28 @@ export class PdfCompressionService {
         },
       });
     }
+  }
+
+  private getScale(level: CompressionLevel): number {
+    switch (level) {
+      case 'maximum':
+        return 0.5;
+      case 'recommended':
+        return 1.0;
+      case 'low':
+        return 1.5;
+      default:
+        return 1.0;
+    }
+  }
+
+  private base64ToUint8Array(base64: string): Uint8Array {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
   }
 
   reset(): void {

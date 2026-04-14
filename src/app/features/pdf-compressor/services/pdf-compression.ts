@@ -55,7 +55,7 @@ export class PdfCompressionService {
       }
 
       // Get compression settings
-      const { scale, jpegQuality } = this.getCompressionSettings(level);
+      const { scale } = this.getCompressionSettings(level);
 
       // Load PDF with PDF.js
       const pdfDoc = await pdfjs.getDocument({
@@ -83,28 +83,38 @@ export class PdfCompressionService {
         canvas.height = viewport.height;
         const context = canvas.getContext('2d')!;
 
-        // Render page to canvas as JPEG
+        // Fill with white background (important!)
+        context.fillStyle = '#FFFFFF';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Render page to canvas
         await page.render({
           canvasContext: context,
           viewport: viewport,
           canvas: canvas,
         });
 
-        // Convert canvas to JPEG with compression
-        const imageData = canvas.toDataURL('image/jpeg', jpegQuality);
+        // Convert canvas to PNG (more reliable than JPEG)
+        const imageData = canvas.toDataURL('image/png');
         const base64Data = imageData.split(',')[1];
-        const jpegBytes = this.base64ToUint8Array(base64Data);
+        const pngBytes = this.base64ToUint8Array(base64Data);
 
-        // Embed JPEG in new PDF
-        const jpgImage = await newPdfDoc.embedJpg(jpegBytes);
+        // Embed PNG in new PDF
+        const pngImage = await newPdfDoc.embedPng(pngBytes);
 
-        // Add page with same dimensions
-        const newPage = newPdfDoc.addPage([viewport.width, viewport.height]);
-        newPage.drawImage(jpgImage, {
+        // Add page with same dimensions (pdf-lib uses points, 72 dpi)
+        // Convert pixels to points (1 pixel = 1 point)
+        const pageWidth = viewport.width;
+        const pageHeight = viewport.height;
+
+        const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
+
+        // Draw image (pdf-lib origin is bottom-left, need to flip)
+        newPage.drawImage(pngImage, {
           x: 0,
           y: 0,
-          width: viewport.width,
-          height: viewport.height,
+          width: pageWidth,
+          height: pageHeight,
         });
 
         // Update progress
@@ -145,16 +155,16 @@ export class PdfCompressionService {
     }
   }
 
-  private getCompressionSettings(level: CompressionLevel): { scale: number; jpegQuality: number } {
+  private getCompressionSettings(level: CompressionLevel): { scale: number } {
     switch (level) {
       case 'maximum':
-        return { scale: 0.75, jpegQuality: 0.5 };
+        return { scale: 0.75 };
       case 'recommended':
-        return { scale: 1.0, jpegQuality: 0.75 };
+        return { scale: 1.0 };
       case 'low':
-        return { scale: 1.5, jpegQuality: 0.9 };
+        return { scale: 1.5 };
       default:
-        return { scale: 1.0, jpegQuality: 0.75 };
+        return { scale: 1.0 };
     }
   }
 

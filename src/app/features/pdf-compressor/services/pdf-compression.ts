@@ -55,10 +55,12 @@ export class PdfCompressionService {
         progress: { percent: 5, stage: 'reading' },
       });
 
-      // Load PDF with PDF.js - use promise wrapper
-      const pdfDoc = await pdfjs.getDocument({ data: new Uint8Array(file.buffer) });
+      // Load PDF with PDF.js
+      const loadingTask = pdfjs.getDocument({ data: new Uint8Array(file.buffer) });
+      const pdfDoc = await loadingTask.promise;
 
       const numPages = pdfDoc.numPages;
+      console.log('PDF loaded, pages:', numPages);
       console.log(`PDF loaded: ${numPages} páginas`);
 
       // Get scale based on compression level
@@ -90,12 +92,13 @@ export class PdfCompressionService {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Render page
-        await page.render({
+        // Render page - use promise for async
+        const renderTask = page.render({
           canvasContext: ctx,
           viewport: viewport,
           canvas: canvas,
-        }).promise;
+        });
+        await renderTask.promise;
 
         console.log(`Page ${i}: rendered ${canvas.width}x${canvas.height}`);
 

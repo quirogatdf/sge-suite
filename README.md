@@ -1,6 +1,8 @@
 # SGE Suite - Sistema de Gestión Gubernamental
 
-Plataforma oficial del Gobierno de Tierra del Fuego para la gestión de documentos y herramientas digitales.
+> ⚠️ **Nota**: Este proyecto se encuentra en desarrollo y **NO es una herramienta oficial** del Gobierno de Tierra del Fuego.
+
+Plataforma en desarrollo para la gestión de documentos y herramientas digitales del Gobierno de Tierra del Fuego.
 
 ## 🚀 Características
 
@@ -79,7 +81,7 @@ El proyecto implementa un sistema de diseño basado en el manual de marca oficia
 
 ## 📝 Licencia
 
-Todos los derechos reservados - Gobierno de Tierra del Fuego
+En desarrollo - Todos los derechos reservados
 
 ## 👥 Contacto
 

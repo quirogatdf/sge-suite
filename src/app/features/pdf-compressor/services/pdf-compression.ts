@@ -151,11 +151,11 @@ export class PdfCompressionService {
       case 'maximum':
         return { scale: 1.0, quality: 0.7 };
       case 'recommended':
-        return { scale: 1.25, quality: 0.8 };
+        return { scale: 1.5, quality: 0.85 };
       case 'low':
-        return { scale: 1.5, quality: 0.92 };
+        return { scale: 2.0, quality: 0.92 };
       default:
-        return { scale: 1.25, quality: 0.8 };
+        return { scale: 1.5, quality: 0.85 };
     }
   }
 

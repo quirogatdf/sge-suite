@@ -127,10 +127,16 @@ export class PdfCompressionService {
         useObjectStreams: true,
       });
 
+      // If compressed is bigger, return original
+      let outputBuffer = compressedPdfBytes;
+      if (outputBuffer.length > file.size) {
+        outputBuffer = new Uint8Array(file.buffer);
+      }
+
       const result: CompressionResult = {
         originalSize: file.size,
-        compressedSize: compressedPdfBytes.length,
-        outputBuffer: compressedPdfBytes,
+        compressedSize: outputBuffer.length,
+        outputBuffer: outputBuffer,
         filename: '',
       };
 

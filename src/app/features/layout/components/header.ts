@@ -262,6 +262,8 @@ interface NavItem {
         color: #666666;
         letter-spacing: -0.025em;
         margin: 0;
+        white-space: nowrap;
+        text-align: center;
       }
 
       /* ----------------------------------------

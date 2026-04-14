@@ -6,8 +6,19 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon-16x16.png" />
+    <!-- PDF.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/build/pdf.min.js"></script>
   </head>
   <body>
     <app-root></app-root>
+    <script>
+      // Configure PDF.js worker
+      if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.9.155/build/pdf.worker.min.js';
+      }
+      // Make available globally
+      window.pdfjsLib = pdfjsLib;
+    </script>
   </body>
 </html>

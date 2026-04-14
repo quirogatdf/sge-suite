@@ -42,8 +42,6 @@ export class PdfCompressionService {
       progress: { percent: 0, stage: 'reading' },
     });
 
-    const startTime = Date.now();
-
     try {
       const pdfjs = window.pdfjsLib;
       if (!pdfjs) {
@@ -55,17 +53,18 @@ export class PdfCompressionService {
         progress: { percent: 5, stage: 'reading' },
       });
 
+      // Get compression settings
+      const { scale, quality } = this.getCompressionSettings(level);
+
       // Load PDF with PDF.js
       const loadingTask = pdfjs.getDocument({ data: new Uint8Array(file.buffer) });
       const pdfDoc = await loadingTask.promise;
-
       const numPages = pdfDoc.numPages;
-      console.log('PDF loaded, pages:', numPages);
-      console.log(`PDF loaded: ${numPages} páginas`);
 
-      // Get scale based on compression level
-      const scale = this.getScale(level);
-      console.log(`Scale: ${scale}`);
+      this.state.set({
+        status: 'compressing',
+        progress: { percent: 10, stage: 'reading' },
+      });
 
       // Create new PDF
       const newPdfDoc = await PDFDocument.create();
@@ -73,9 +72,8 @@ export class PdfCompressionService {
       // Process each page
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
-        const viewportOriginal = page.getViewport({ scale: 1 });
 
-        // Render at compressed scale
+        // Render at compression scale
         const viewport = page.getViewport({ scale: scale });
 
         // Create canvas
@@ -92,7 +90,7 @@ export class PdfCompressionService {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Render page - use promise for async
+        // Render page
         const renderTask = page.render({
           canvasContext: ctx,
           viewport: viewport,
@@ -100,18 +98,13 @@ export class PdfCompressionService {
         });
         await renderTask.promise;
 
-        console.log(`Page ${i}: rendered ${canvas.width}x${canvas.height}`);
-
-        // Convert to JPEG
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        console.log(' JPEG size:', Math.floor(dataUrl.length * 0.75));
+        // Convert to JPEG with compression quality
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
         const base64 = dataUrl.split(',')[1];
         const jpgBytes = this.base64ToUint8Array(base64);
-        console.log(' JPG bytes:', jpgBytes.length);
 
         // Embed in new PDF
         const jpg = await newPdfDoc.embedJpg(jpgBytes);
-        console.log(' Embedded image:', jpg.width, 'x', jpg.height);
         const pageWidth = viewport.width;
         const pageHeight = viewport.height;
         const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
@@ -129,12 +122,10 @@ export class PdfCompressionService {
         });
       }
 
-      // Save
+      // Save with object streams
       const compressedPdfBytes = await newPdfDoc.save({
         useObjectStreams: true,
       });
-
-      console.log(`Compresión completada: ${file.size} -> ${compressedPdfBytes.length} bytes`);
 
       const result: CompressionResult = {
         originalSize: file.size,
@@ -145,7 +136,6 @@ export class PdfCompressionService {
 
       this.state.set({ status: 'completed', result });
     } catch (error) {
-      console.error('Error:', error);
       this.state.set({
         status: 'error',
         error: {
@@ -156,16 +146,16 @@ export class PdfCompressionService {
     }
   }
 
-  private getScale(level: CompressionLevel): number {
+  private getCompressionSettings(level: CompressionLevel): { scale: number; quality: number } {
     switch (level) {
       case 'maximum':
-        return 0.5;
+        return { scale: 0.5, quality: 0.5 };
       case 'recommended':
-        return 1.0;
+        return { scale: 0.75, quality: 0.6 };
       case 'low':
-        return 1.5;
+        return { scale: 1.5, quality: 0.85 };
       default:
-        return 1.0;
+        return { scale: 0.75, quality: 0.6 };
     }
   }
 

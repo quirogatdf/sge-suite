@@ -75,15 +75,18 @@ export class PdfCompressionService {
       // Process each page
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
+        const originalViewport = page.getViewport({ scale: 1 });
+
+        // Use scale to determine render size
         const viewport = page.getViewport({ scale: scale });
 
         // Create canvas for rendering
         const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
         const context = canvas.getContext('2d')!;
 
-        // Fill with white background (important!)
+        // Fill with white background (important for PDF!)
         context.fillStyle = '#FFFFFF';
         context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -94,7 +97,13 @@ export class PdfCompressionService {
           canvas: canvas,
         });
 
-        // Convert canvas to PNG (more reliable than JPEG)
+        // Check if canvas has content - debug
+        const isEmpty = !context.getImageData(0, 0, 1, 1).data[3];
+        if (isEmpty) {
+          console.warn(`Page ${i} rendered empty!`);
+        }
+
+        // Convert canvas to PNG
         const imageData = canvas.toDataURL('image/png');
         const base64Data = imageData.split(',')[1];
         const pngBytes = this.base64ToUint8Array(base64Data);
@@ -102,14 +111,13 @@ export class PdfCompressionService {
         // Embed PNG in new PDF
         const pngImage = await newPdfDoc.embedPng(pngBytes);
 
-        // Add page with same dimensions (pdf-lib uses points, 72 dpi)
-        // Convert pixels to points (1 pixel = 1 point)
-        const pageWidth = viewport.width;
-        const pageHeight = viewport.height;
+        // Use original PDF page dimensions (in points)
+        const pageWidth = originalViewport.width;
+        const pageHeight = originalViewport.height;
 
         const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
 
-        // Draw image (pdf-lib origin is bottom-left, need to flip)
+        // Draw image to fill the page
         newPage.drawImage(pngImage, {
           x: 0,
           y: 0,

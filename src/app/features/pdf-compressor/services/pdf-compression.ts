@@ -55,10 +55,8 @@ export class PdfCompressionService {
         progress: { percent: 5, stage: 'reading' },
       });
 
-      // Load PDF with PDF.js
-      const pdfDoc = await pdfjs.getDocument({
-        data: new Uint8Array(file.buffer),
-      });
+      // Load PDF with PDF.js - use promise wrapper
+      const pdfDoc = await pdfjs.getDocument({ data: new Uint8Array(file.buffer) });
 
       const numPages = pdfDoc.numPages;
       console.log(`PDF loaded: ${numPages} páginas`);
@@ -73,34 +71,29 @@ export class PdfCompressionService {
       // Process each page
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: 1 });
+        const viewportOriginal = page.getViewport({ scale: 1 });
 
-        // Create canvas at original size
+        // Render at compressed scale
+        const viewport = page.getViewport({ scale: scale });
+
+        // Create canvas
         const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) {
           throw new Error('No se pudo crear contexto de canvas');
         }
 
+        // Fill white background
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Render at specified scale
-        const renderViewport = page.getViewport({ scale: scale * 1.5 });
-
-        // Resize canvas if needed
-        canvas.width = renderViewport.width;
-        canvas.height = renderViewport.height;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Render
+        // Render page
         await page.render({
           canvasContext: ctx,
-          viewport: renderViewport,
+          viewport: viewport,
           canvas: canvas,
         }).promise;
 
@@ -113,12 +106,14 @@ export class PdfCompressionService {
 
         // Embed in new PDF
         const jpg = await newPdfDoc.embedJpg(jpgBytes);
-        const newPage = newPdfDoc.addPage([renderViewport.width, renderViewport.height]);
+        const pageWidth = viewport.width;
+        const pageHeight = viewport.height;
+        const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
         newPage.drawImage(jpg, {
           x: 0,
           y: 0,
-          width: renderViewport.width,
-          height: renderViewport.height,
+          width: pageWidth,
+          height: pageHeight,
         });
 
         const progress = 10 + Math.floor((i / numPages) * 80);

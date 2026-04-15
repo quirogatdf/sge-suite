@@ -1,5 +1,6 @@
 import { Component, signal, output } from '@angular/core';
 import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
+import { formatSize } from '../../../shared/utils/format-size';
 
 @Component({
   selector: 'app-drop-zone',
@@ -65,7 +66,7 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
   styles: [
     `
       .drop-zone {
-        border: 2px dashed #d4d4d4;
+        border: 2px dashed var(--color-gray-300);
         border-radius: 0.75rem;
         padding: 2rem;
         text-align: center;
@@ -81,14 +82,14 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
 
       .drop-zone:hover,
       .drop-zone.dragover {
-        border-color: #ff6600;
-        background: #fafafa;
+        border-color: var(--color-primary);
+        background: var(--color-gray-50);
       }
 
       .drop-zone.has-file {
         border-style: solid;
-        border-color: #a3a3a3;
-        background: #f5f5f5;
+        border-color: var(--color-gray-400);
+        background: var(--color-gray-100);
       }
 
       .drop-content {
@@ -101,26 +102,26 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
       .upload-icon {
         width: 3rem;
         height: 3rem;
-        color: #a3a3a3;
+        color: var(--color-gray-400);
         margin-bottom: 0.5rem;
       }
 
       .drop-text {
         font-size: 1.125rem;
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
         margin: 0;
       }
 
       .drop-subtext {
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
         margin: 0;
       }
 
       .drop-hint {
         font-size: 0.75rem;
-        color: #a3a3a3;
+        color: var(--color-gray-400);
         margin: 0.5rem 0 0;
       }
 
@@ -135,7 +136,7 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
       .file-icon {
         width: 2.5rem;
         height: 2.5rem;
-        color: #ff6600;
+        color: var(--color-primary);
         flex-shrink: 0;
       }
 
@@ -149,7 +150,7 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
 
       .file-name {
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -157,7 +158,7 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
 
       .file-size {
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
       }
 
       .remove-btn {
@@ -167,7 +168,7 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
         background: transparent;
         border: none;
         border-radius: 0.25rem;
-        color: #737373;
+        color: var(--color-gray-500);
         cursor: pointer;
         transition:
           background 0.15s,
@@ -175,12 +176,12 @@ import { PdfFile, MAX_FILE_SIZE } from '../models/pdf-compression.types';
       }
 
       .remove-btn:hover {
-        background: #e5e5e5;
-        color: #666666;
+        background: var(--color-gray-200);
+        color: var(--color-text-secondary);
       }
 
       .error-message {
-        color: #ff6600;
+        color: var(--color-primary);
         font-size: 0.875rem;
         margin: 1rem 0 0;
       }
@@ -272,9 +273,5 @@ export class DropZoneComponent {
     reader.readAsArrayBuffer(file);
   }
 
-  protected formatSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+  protected formatSize = formatSize;
 }

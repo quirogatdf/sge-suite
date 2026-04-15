@@ -26,7 +26,7 @@ import { Component } from '@angular/core';
         font-size: 2rem;
         font-weight: 700;
         margin: 0 0 2rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
       .content {
         display: flex;
@@ -34,12 +34,12 @@ import { Component } from '@angular/core';
         gap: 1.5rem;
       }
       p {
-        color: #737373;
+        color: var(--color-gray-500);
         margin: 0;
       }
       .info-card {
-        background: #f5f5f5;
-        border: 1px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.5rem;
         padding: 1.5rem;
       }
@@ -47,11 +47,11 @@ import { Component } from '@angular/core';
         font-size: 1.125rem;
         font-weight: 600;
         margin: 0 0 1rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
       .info-card p {
         margin: 0.5rem 0;
-        color: #737373;
+        color: var(--color-gray-500);
       }
     `,
   ],

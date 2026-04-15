@@ -16,6 +16,10 @@ interface WindowPdfjsLib {
 
 declare const window: Window & { pdfjsLib?: WindowPdfjsLib };
 
+// Límites de seguridad
+const MAX_PAGES_LIMIT = 100;
+const MAX_FILE_SIZE_MB = 100;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -37,6 +41,11 @@ export class PdfCompressionService {
       return;
     }
 
+    // 📌 GUARDAR tamaño en variable simple ANTES de operaciones async
+    // Esto evita el error "Buffer is already detached"
+    const originalSize = file.size;
+    const originalName = file.name;
+
     this.state.set({
       status: 'compressing',
       progress: { percent: 0, stage: 'reading' },
@@ -48,22 +57,35 @@ export class PdfCompressionService {
         throw new Error('PDF.js no está cargado');
       }
 
-      // Create buffer copies to avoid detachment
-      const bufferForSimple = new Uint8Array(file.buffer);
-      const bufferForRaster = new Uint8Array(file.buffer);
+      // 📌 LIMITE DE TAMAÑO DE ARCHIVO
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        throw new Error(`El archivo supera el límite de ${MAX_FILE_SIZE_MB}MB`);
+      }
 
-      // First try simple compression
-      const simpleCompressed = await this.compressSimple(bufferForSimple);
+      // 📌 COPIA INDEPENDIENTE para cada operación
+      // IMPORTANTE: PDF.js "desconecta" el buffer al transferirlo al worker
+      // Por eso usamos .slice() para crear una copia independiente
+      const bufferSimple = new Uint8Array(file.buffer).slice();
+      const bufferRaster = new Uint8Array(file.buffer).slice();
 
-      const reduction = (1 - simpleCompressed.length / file.size) * 100;
+      // First try simple compression (pdf-lib)
+      this.state.set({
+        status: 'compressing',
+        progress: { percent: 5, stage: 'reading' },
+      });
+
+      const simpleCompressed = await this.compressSimple(bufferSimple);
+
+      // 📌 Usar variable simple, no acceder a file.size después de async
+      const reduction = (1 - simpleCompressed.length / originalSize) * 100;
 
       // If simple compression reduced enough (more than 5%), use it
       if (reduction > 5) {
         const result: CompressionResult = {
-          originalSize: file.size,
+          originalSize,
           compressedSize: simpleCompressed.length,
           outputBuffer: simpleCompressed,
-          filename: '',
+          filename: this.getCompressedFilename(originalName),
         };
         this.state.set({ status: 'completed', result });
         return;
@@ -71,15 +93,22 @@ export class PdfCompressionService {
 
       this.state.set({
         status: 'compressing',
-        progress: { percent: 5, stage: 'reading' },
+        progress: { percent: 10, stage: 'reading' },
       });
 
       const { scale, quality } = this.getCompressionSettings(level);
 
-      // Load PDF with PDF.js
-      const loadingTask = pdfjs.getDocument({ data: bufferForRaster });
+      // 📌 COPIA INDEPENDIENTE para PDF.js (evita detached buffer)
+      const loadingTask = pdfjs.getDocument({ data: bufferRaster });
       const pdfDoc = await loadingTask.promise;
       const numPages = pdfDoc.numPages;
+
+      // 📌 LIMITE DE PÁGINAS
+      if (numPages > MAX_PAGES_LIMIT) {
+        throw new Error(
+          `El PDF tiene ${numPages} páginas. Máximo ${MAX_PAGES_LIMIT} para comprimir.`,
+        );
+      }
 
       this.state.set({
         status: 'compressing',
@@ -88,50 +117,66 @@ export class PdfCompressionService {
 
       const newPdfDoc = await PDFDocument.create();
 
+      // 📌 PROCESAR PÁGINA POR PÁGINA con cleanup
       for (let i = 1; i <= numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: scale });
+        try {
+          const page = await pdfDoc.getPage(i);
+          const viewport = page.getViewport({ scale: scale });
 
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.floor(viewport.width);
-        canvas.height = Math.floor(viewport.height);
+          // 📌 Canvas temporal - se limpia después de usar
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.floor(viewport.width);
+          canvas.height = Math.floor(viewport.height);
 
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) {
-          throw new Error('No se pudo crear contexto de canvas');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) {
+            throw new Error('No se pudo crear contexto de canvas');
+          }
+
+          // Fondo blanco para PDFs que tienen fondo transparente
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const renderTask = page.render({
+            canvasContext: ctx,
+            viewport: viewport,
+            canvas: canvas,
+          });
+          await renderTask.promise;
+
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          const base64 = dataUrl.split(',')[1];
+          const jpgBytes = this.base64ToUint8Array(base64);
+
+          const jpg = await newPdfDoc.embedJpg(jpgBytes);
+          const pageWidth = viewport.width;
+          const pageHeight = viewport.height;
+          const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
+          newPage.drawImage(jpg, {
+            x: 0,
+            y: 0,
+            width: pageWidth,
+            height: pageHeight,
+          });
+
+          // 📌 Cleanup de memoria - liberar recursos de esta página
+          canvas.width = 0;
+          canvas.height = 0;
+
+          const progress = 10 + Math.floor((i / numPages) * 80);
+          this.state.set({
+            status: 'compressing',
+            progress: { percent: progress, stage: 'compressing' },
+          });
+        } catch (pageError) {
+          // Si una página falla, continuar con las demás
+          console.warn(`Error en página ${i}:`, pageError);
+          continue;
         }
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const renderTask = page.render({
-          canvasContext: ctx,
-          viewport: viewport,
-          canvas: canvas,
-        });
-        await renderTask.promise;
-
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        const base64 = dataUrl.split(',')[1];
-        const jpgBytes = this.base64ToUint8Array(base64);
-
-        const jpg = await newPdfDoc.embedJpg(jpgBytes);
-        const pageWidth = viewport.width;
-        const pageHeight = viewport.height;
-        const newPage = newPdfDoc.addPage([pageWidth, pageHeight]);
-        newPage.drawImage(jpg, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-        });
-
-        const progress = 10 + Math.floor((i / numPages) * 80);
-        this.state.set({
-          status: 'compressing',
-          progress: { percent: progress, stage: 'compressing' },
-        });
       }
+
+      // 📌 Cerrar el documento PDF.js para liberar memoria
+      await pdfDoc.destroy();
 
       const rasterCompressed = await newPdfDoc.save({
         useObjectStreams: true,
@@ -141,20 +186,20 @@ export class PdfCompressionService {
       let finalBuffer: Uint8Array;
       if (
         rasterCompressed.length < simpleCompressed.length &&
-        rasterCompressed.length < file.size
+        rasterCompressed.length < originalSize
       ) {
         finalBuffer = rasterCompressed;
-      } else if (simpleCompressed.length < file.size) {
+      } else if (simpleCompressed.length < originalSize) {
         finalBuffer = simpleCompressed;
       } else {
         finalBuffer = new Uint8Array(file.buffer);
       }
 
       const result: CompressionResult = {
-        originalSize: file.size,
+        originalSize,
         compressedSize: finalBuffer.length,
         outputBuffer: finalBuffer,
-        filename: '',
+        filename: this.getCompressedFilename(originalName),
       };
 
       this.state.set({ status: 'completed', result });
@@ -170,20 +215,22 @@ export class PdfCompressionService {
   }
 
   private async compressSimple(buffer: Uint8Array): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.load(buffer);
+    // 📌 IMPORTANTE: hacer copia para no afectar el buffer original
+    const bufferCopy = new Uint8Array(buffer).slice();
+    const pdfDoc = await PDFDocument.load(bufferCopy);
     return await pdfDoc.save({ useObjectStreams: true });
   }
 
-  private getCompressionSettings(level: CompressionLevel): { scale: number; quality: number } {
+  private getCompressionSettings(level: CompressionLevel): {
+    scale: number;
+    quality: number;
+  } {
     switch (level) {
       case 'maximum':
-        // Always aggressive for scanned PDFs
         return { scale: 0.75, quality: 0.6 };
       case 'recommended':
-        // If simple didn't work, use aggressive to force reduction
         return { scale: 1.0, quality: 0.7 };
       case 'low':
-        // If simple didn't work, use moderate
         return { scale: 1.5, quality: 0.85 };
       default:
         return { scale: 1.0, quality: 0.7 };
@@ -197,6 +244,11 @@ export class PdfCompressionService {
       bytes[i] = binary.charCodeAt(i);
     }
     return bytes;
+  }
+
+  private getCompressedFilename(originalName: string): string {
+    const baseName = originalName.replace(/\.pdf$/i, '');
+    return `${baseName}_comprimido.pdf`;
   }
 
   reset(): void {

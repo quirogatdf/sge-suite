@@ -111,17 +111,17 @@ import {
         font-size: 2rem;
         font-weight: 700;
         margin: 0 0 0.5rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .subtitle {
         font-size: 1rem;
-        color: #737373;
+        color: var(--color-gray-500);
         margin: 0;
       }
 
       .subtitle strong {
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .content {
@@ -148,12 +148,12 @@ import {
         justify-content: center;
         gap: 0.5rem;
         padding: 1rem 1.5rem;
-        background: #ff6600;
+        background: var(--color-primary);
         border: none;
         border-radius: 0.5rem;
         font-size: 1.125rem;
         font-weight: 600;
-        color: #ffffff;
+        color: var(--color-white);
         cursor: pointer;
         transition:
           background 0.15s,
@@ -161,7 +161,7 @@ import {
       }
 
       .compress-btn:hover:not(:disabled) {
-        background: #e55c00;
+        background: var(--color-primary-hover);
       }
 
       .compress-btn:disabled {
@@ -172,8 +172,8 @@ import {
       .spinner {
         width: 1.25rem;
         height: 1.25rem;
-        border: 2px solid #f5f5f5;
-        border-top-color: #e5e5e5;
+        border: 2px solid var(--color-gray-100);
+        border-top-color: var(--color-gray-200);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -190,8 +190,8 @@ import {
         align-items: center;
         gap: 1rem;
         padding: 2rem;
-        background: #f5f5f5;
-        border: 1px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.75rem;
         text-align: center;
       }
@@ -199,35 +199,35 @@ import {
       .error-icon {
         width: 3rem;
         height: 3rem;
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .error-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #666666;
+        color: var(--color-text-secondary);
         margin: 0;
       }
 
       .error-message {
         font-size: 0.875rem;
-        color: #666666;
+        color: var(--color-text-secondary);
         margin: 0;
       }
 
       .retry-btn {
         margin-top: 0.5rem;
         padding: 0.5rem 1rem;
-        background: #ffffff;
-        border: 1px solid #d4d4d4;
+        background: var(--color-white);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.375rem;
-        color: #666666;
+        color: var(--color-text-secondary);
         cursor: pointer;
         transition: background 0.15s;
       }
 
       .retry-btn:hover {
-        background: #f5f5f5;
+        background: var(--color-gray-100);
       }
     `,
   ],

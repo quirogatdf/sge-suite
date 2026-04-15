@@ -30,25 +30,25 @@ import { CompressionProgress } from '../models/pdf-compression.types';
 
       .progress-label {
         font-size: 0.875rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .progress-percent {
         font-size: 0.875rem;
         font-weight: 600;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .progress-bar {
         height: 0.5rem;
-        background: #e5e5e5;
+        background: var(--color-gray-200);
         border-radius: 0.25rem;
         overflow: hidden;
       }
 
       .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #ff6600, #e55c00);
+        background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
         border-radius: 0.25rem;
         transition: width 0.3s ease-out;
       }

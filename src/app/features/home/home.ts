@@ -55,14 +55,14 @@ import { RouterLink } from '@angular/router';
       .title {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #666666;
+        color: var(--color-text-secondary);
         margin: 0 0 1rem;
         line-height: 1.2;
       }
 
       .subtitle {
         font-size: 1.125rem;
-        color: #737373;
+        color: var(--color-gray-500);
         margin: 0;
         max-width: 48ch;
         margin: 0 auto;
@@ -75,8 +75,8 @@ import { RouterLink } from '@angular/router';
       }
 
       .tool-card {
-        background: #f5f5f5;
-        border: 1px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.75rem;
         padding: 2rem;
         text-decoration: none;
@@ -87,32 +87,32 @@ import { RouterLink } from '@angular/router';
       }
 
       .tool-card:hover {
-        border-color: #a3a3a3;
+        border-color: var(--color-gray-400);
         transform: translateY(-2px);
       }
 
       .tool-icon {
         width: 3rem;
         height: 3rem;
-        background: #ff6600;
+        background: var(--color-primary);
         border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 1rem;
-        color: #ffffff;
+        color: var(--color-white);
       }
 
       .tool-title {
         font-size: 1.25rem;
         font-weight: 600;
         margin: 0 0 0.5rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .tool-description {
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
         margin: 0;
       }
 

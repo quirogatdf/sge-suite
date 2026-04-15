@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CompressionResult } from '../models/pdf-compression.types';
+import { formatSize } from '../../../shared/utils/format-size';
 
 @Component({
   selector: 'app-result-card',
@@ -59,8 +60,8 @@ import { CompressionResult } from '../models/pdf-compression.types';
         align-items: center;
         gap: 1.5rem;
         padding: 2rem;
-        background: #f5f5f5;
-        border: 1px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.75rem;
       }
 
@@ -73,13 +74,13 @@ import { CompressionResult } from '../models/pdf-compression.types';
       .success-icon {
         width: 2rem;
         height: 2rem;
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .result-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .result-stats {
@@ -97,23 +98,23 @@ import { CompressionResult } from '../models/pdf-compression.types';
 
       .stat-label {
         font-size: 0.75rem;
-        color: #737373;
+        color: var(--color-gray-500);
       }
 
       .stat-value {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .stat-value.compressed {
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .arrow {
         width: 1.5rem;
         height: 1.5rem;
-        color: #a3a3a3;
+        color: var(--color-gray-400);
       }
 
       .result-reduction {
@@ -125,12 +126,12 @@ import { CompressionResult } from '../models/pdf-compression.types';
       .reduction-badge {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .reduction-label {
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
       }
 
       .download-btn {
@@ -138,19 +139,19 @@ import { CompressionResult } from '../models/pdf-compression.types';
         align-items: center;
         gap: 0.5rem;
         padding: 0.75rem 1.5rem;
-        background: #ff6600;
+        background: var(--color-primary);
         border: none;
         border-radius: 0.5rem;
         font-size: 1rem;
         font-weight: 500;
-        color: #ffffff;
+        color: var(--color-white);
         cursor: pointer;
         transition: background 0.15s;
         margin-top: 0.5rem;
       }
 
       .download-btn:hover {
-        background: #e55c00;
+        background: var(--color-primary-hover);
       }
 
       .download-btn svg {
@@ -162,13 +163,13 @@ import { CompressionResult } from '../models/pdf-compression.types';
         background: transparent;
         border: none;
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
         cursor: pointer;
         text-decoration: underline;
       }
 
       .reset-btn:hover {
-        color: #666666;
+        color: var(--color-text-secondary);
       }
     `,
   ],
@@ -185,11 +186,7 @@ export class ResultCardComponent {
     return Math.round(((orig - comp) / orig) * 100);
   }
 
-  protected formatSize(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  }
+  protected formatSize = formatSize;
 
   protected doDownload(): void {
     this.downloadClick.emit();

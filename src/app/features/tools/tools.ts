@@ -26,7 +26,7 @@ import { RouterLink } from '@angular/router';
         font-size: 2rem;
         font-weight: 700;
         margin: 0 0 2rem;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
       .tools-grid {
         display: grid;
@@ -34,8 +34,8 @@ import { RouterLink } from '@angular/router';
         gap: 1rem;
       }
       .tool-item {
-        background: #f5f5f5;
-        border: 1px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 1px solid var(--color-gray-300);
         border-radius: 0.5rem;
         padding: 1.5rem;
         text-decoration: none;
@@ -46,16 +46,16 @@ import { RouterLink } from '@angular/router';
         transition: border-color 0.15s;
       }
       .tool-item:hover {
-        border-color: #a3a3a3;
+        border-color: var(--color-gray-400);
       }
       .tool-name {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
       .tool-desc {
         font-size: 0.875rem;
-        color: #737373;
+        color: var(--color-gray-500);
       }
     `,
   ],

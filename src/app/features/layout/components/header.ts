@@ -99,8 +99,8 @@ interface NavItem {
 
       .header {
         width: 100%;
-        background-color: #ffffff;
-        border-bottom: 2px solid #ff6600;
+        background-color: var(--color-white);
+        border-bottom: 2px solid var(--color-primary);
         position: sticky;
         top: 0;
         z-index: 50;
@@ -154,7 +154,7 @@ interface NavItem {
         padding: 0.625rem 1.25rem;
         font-size: 0.875rem;
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
         text-decoration: none;
         text-transform: uppercase;
         letter-spacing: -0.025em;
@@ -163,12 +163,12 @@ interface NavItem {
       }
 
       .nav-link:hover {
-        background-color: #f5f5f5;
-        color: #ff6600;
+        background-color: var(--color-gray-100);
+        color: var(--color-primary);
       }
 
       .nav-link.active {
-        color: #ff6600;
+        color: var(--color-primary);
         font-weight: 700;
       }
 
@@ -183,13 +183,13 @@ interface NavItem {
         height: 40px;
         background: none;
         border: none;
-        color: #666666;
+        color: var(--color-text-secondary);
         cursor: pointer;
         flex-shrink: 0;
       }
 
       .hamburger:hover {
-        color: #ff6600;
+        color: var(--color-primary);
       }
 
       .hamburger-icon {
@@ -203,8 +203,8 @@ interface NavItem {
       .mobile-menu {
         display: flex;
         flex-direction: column;
-        background-color: #ffffff;
-        border-top: 1px solid #e5e5e5;
+        background-color: var(--color-white);
+        border-top: 1px solid var(--color-gray-200);
         padding: 0.5rem;
       }
 
@@ -212,7 +212,7 @@ interface NavItem {
         padding: 0.75rem 1rem;
         font-size: 1rem;
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
         text-decoration: none;
         text-transform: uppercase;
         border-radius: 0.25rem;
@@ -220,12 +220,12 @@ interface NavItem {
       }
 
       .mobile-nav-link:hover {
-        background-color: #f5f5f5;
-        color: #ff6600;
+        background-color: var(--color-gray-100);
+        color: var(--color-primary);
       }
 
       .mobile-nav-link.active {
-        color: #ff6600;
+        color: var(--color-primary);
         font-weight: 700;
       }
 
@@ -237,7 +237,7 @@ interface NavItem {
         width: 100%;
         height: 400px;
         margin: 0 auto;
-        background-color: #f1f2f2;
+        background-color: var(--color-footer-gray);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -259,7 +259,7 @@ interface NavItem {
       .banner-title {
         font-size: 2rem;
         font-weight: 700;
-        color: #666666;
+        color: var(--color-text-secondary);
         letter-spacing: -0.025em;
         margin: 0;
         white-space: nowrap;

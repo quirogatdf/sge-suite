@@ -13,14 +13,13 @@ interface Address {
   imports: [RouterLink],
   template: `
     <footer class="footer">
-      <!-- Franja Superior: Gris #F1F2F2 - 264px de alto -->
       <div class="footer-top">
         <div class="footer-top-content">
           <!-- Logo del Gobierno -->
           <div class="footer-logo">
             <a routerLink="/" class="logo-link">
               <img
-                src="/images/logo-gobierno.svg"
+                src="/img/logos/GOB-TDF-GRIS-scaled.png"
                 alt="Gobierno de Tierra del Fuego"
                 class="logo-image"
                 width="106"
@@ -159,7 +158,7 @@ interface Address {
       .address-dependency {
         font-size: 0.875rem;
         font-weight: 700;
-        color: #666666;
+        color: var(--color-text-secondary);
         text-transform: uppercase;
         letter-spacing: -0.025em;
       }
@@ -167,21 +166,21 @@ interface Address {
       .address-detail {
         font-size: 0.875rem;
         font-weight: 400;
-        color: #666666;
+        color: var(--color-text-secondary);
         letter-spacing: -0.025em;
       }
 
       .address-city {
         font-size: 0.875rem;
         font-weight: 400;
-        color: #666666;
+        color: var(--color-text-secondary);
         letter-spacing: -0.025em;
       }
 
       .address-phone {
         font-size: 0.875rem;
         font-weight: 400;
-        color: #ff6600;
+        color: var(--color-primary);
         letter-spacing: -0.025em;
       }
 
@@ -195,7 +194,7 @@ interface Address {
       .btn-social {
         width: 43px;
         height: 43px;
-        background-color: rgb(204, 204, 204);
+        background-color: var(--color-gray-400);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -203,7 +202,7 @@ interface Address {
       }
 
       .btn-social:hover {
-        background-color: #a3a3a3;
+        background-color: var(--color-gray-400);
       }
 
       .social-icon {
@@ -218,7 +217,7 @@ interface Address {
       .footer-bottom {
         width: 100%;
         height: 150px;
-        background-color: #ff6600;
+        background-color: var(--color-primary);
         padding: 2rem 4rem;
         display: flex;
         align-items: center;

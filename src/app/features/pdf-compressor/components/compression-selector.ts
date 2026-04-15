@@ -1,4 +1,4 @@
-import { Component, input, output, model } from '@angular/core';
+import { Component, model } from '@angular/core';
 import {
   CompressionLevel,
   COMPRESSION_LABELS,
@@ -36,7 +36,7 @@ import {
       .label {
         font-size: 0.875rem;
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .options {
@@ -50,8 +50,8 @@ import {
         flex-direction: column;
         gap: 0.25rem;
         padding: 1rem 1.25rem;
-        background: #f5f5f5;
-        border: 2px solid #d4d4d4;
+        background: var(--color-gray-100);
+        border: 2px solid var(--color-gray-300);
         border-radius: 0.5rem;
         cursor: pointer;
         text-align: left;
@@ -61,22 +61,22 @@ import {
       }
 
       .option:hover {
-        border-color: #a3a3a3;
+        border-color: var(--color-gray-400);
       }
 
       .option.selected {
-        border-color: #ff6600;
-        background: #ffffff;
+        border-color: var(--color-primary);
+        background: var(--color-white);
       }
 
       .option-label {
         font-weight: 500;
-        color: #666666;
+        color: var(--color-text-secondary);
       }
 
       .option-desc {
         font-size: 0.8125rem;
-        color: #737373;
+        color: var(--color-gray-500);
       }
     `,
   ],

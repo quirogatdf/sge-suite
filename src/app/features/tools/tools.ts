@@ -12,6 +12,10 @@ import { RouterLink } from '@angular/router';
           <span class="tool-name">Comprimir PDF</span>
           <span class="tool-desc">Reduce el tamaño de archivos PDF</span>
         </a>
+        <a routerLink="/combinar-pdf" class="tool-item">
+          <span class="tool-name">Combinar PDFs</span>
+          <span class="tool-desc">Une múltiples PDFs en uno solo</span>
+        </a>
       </div>
     </div>
   `,

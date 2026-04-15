@@ -177,13 +177,13 @@ export class PdfCompressionService {
   private getCompressionSettings(level: CompressionLevel): { scale: number; quality: number } {
     switch (level) {
       case 'maximum':
-        return { scale: 0.75, quality: 0.5 };
+        return { scale: 1.0, quality: 0.7 };
       case 'recommended':
-        return { scale: 1.0, quality: 0.65 };
+        return { scale: 1.5, quality: 0.85 };
       case 'low':
-        return { scale: 1.5, quality: 0.8 };
+        return { scale: 2.0, quality: 0.92 };
       default:
-        return { scale: 1.0, quality: 0.65 };
+        return { scale: 1.5, quality: 0.85 };
     }
   }
 

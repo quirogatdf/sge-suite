@@ -53,6 +53,22 @@ export class PdfCompressionService {
         progress: { percent: 5, stage: 'reading' },
       });
 
+      // Check if PDF has embedded images (scan-based)
+      const hasImages = await this.hasEmbeddedImages(new Uint8Array(file.buffer));
+
+      // If PDF has images (already scanned), use simple compression to avoid enlargement
+      if (hasImages) {
+        const compressedPdfBytes = await this.compressSimple(file.buffer);
+        const result: CompressionResult = {
+          originalSize: file.size,
+          compressedSize: compressedPdfBytes.length,
+          outputBuffer: compressedPdfBytes,
+          filename: '',
+        };
+        this.state.set({ status: 'completed', result });
+        return;
+      }
+
       // Get compression settings
       const { scale, quality } = this.getCompressionSettings(level);
 
@@ -150,6 +166,19 @@ export class PdfCompressionService {
         },
       });
     }
+  }
+
+  private async hasEmbeddedImages(pdfData: Uint8Array): Promise<boolean> {
+    // Check PDF for embedded images by looking for image XObject references
+    // PDF with images (scanned) will have /XObject entries
+    const pdfString = new TextDecoder().decode(pdfData);
+    return pdfString.includes('/XObject') && pdfString.includes('/Image');
+  }
+
+  private async compressSimple(pdfData: ArrayBuffer): Promise<Uint8Array> {
+    // Simple compression - load and save with object streams
+    const pdfDoc = await PDFDocument.load(new Uint8Array(pdfData));
+    return await pdfDoc.save({ useObjectStreams: true });
   }
 
   private getCompressionSettings(level: CompressionLevel): { scale: number; quality: number } {

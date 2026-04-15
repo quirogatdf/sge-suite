@@ -48,16 +48,36 @@ export class PdfCompressionService {
         throw new Error('PDF.js no está cargado');
       }
 
+      // Create buffer copies to avoid detachment
+      const bufferForSimple = new Uint8Array(file.buffer);
+      const bufferForRaster = new Uint8Array(file.buffer);
+
+      // First try simple compression
+      const simpleCompressed = await this.compressSimple(bufferForSimple);
+
+      const reduction = (1 - simpleCompressed.length / file.size) * 100;
+
+      // If simple compression reduced enough (more than 5%), use it
+      if (reduction > 5) {
+        const result: CompressionResult = {
+          originalSize: file.size,
+          compressedSize: simpleCompressed.length,
+          outputBuffer: simpleCompressed,
+          filename: '',
+        };
+        this.state.set({ status: 'completed', result });
+        return;
+      }
+
       this.state.set({
         status: 'compressing',
         progress: { percent: 5, stage: 'reading' },
       });
 
-      // Get compression settings
       const { scale, quality } = this.getCompressionSettings(level);
 
       // Load PDF with PDF.js
-      const loadingTask = pdfjs.getDocument({ data: new Uint8Array(file.buffer) });
+      const loadingTask = pdfjs.getDocument({ data: bufferForRaster });
       const pdfDoc = await loadingTask.promise;
       const numPages = pdfDoc.numPages;
 
@@ -66,17 +86,12 @@ export class PdfCompressionService {
         progress: { percent: 10, stage: 'reading' },
       });
 
-      // Create new PDF
       const newPdfDoc = await PDFDocument.create();
 
-      // Process each page
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
-
-        // Render at compression scale
         const viewport = page.getViewport({ scale: scale });
 
-        // Create canvas
         const canvas = document.createElement('canvas');
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
@@ -86,11 +101,9 @@ export class PdfCompressionService {
           throw new Error('No se pudo crear contexto de canvas');
         }
 
-        // Fill white background
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Render page
         const renderTask = page.render({
           canvasContext: ctx,
           viewport: viewport,
@@ -98,12 +111,10 @@ export class PdfCompressionService {
         });
         await renderTask.promise;
 
-        // Convert to JPEG with compression quality
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         const base64 = dataUrl.split(',')[1];
         const jpgBytes = this.base64ToUint8Array(base64);
 
-        // Embed in new PDF
         const jpg = await newPdfDoc.embedJpg(jpgBytes);
         const pageWidth = viewport.width;
         const pageHeight = viewport.height;
@@ -122,21 +133,27 @@ export class PdfCompressionService {
         });
       }
 
-      // Save with object streams
-      const compressedPdfBytes = await newPdfDoc.save({
+      const rasterCompressed = await newPdfDoc.save({
         useObjectStreams: true,
       });
 
-      // If compressed is bigger, return original
-      let outputBuffer = compressedPdfBytes;
-      if (outputBuffer.length > file.size) {
-        outputBuffer = new Uint8Array(file.buffer);
+      // Choose smallest result
+      let finalBuffer: Uint8Array;
+      if (
+        rasterCompressed.length < simpleCompressed.length &&
+        rasterCompressed.length < file.size
+      ) {
+        finalBuffer = rasterCompressed;
+      } else if (simpleCompressed.length < file.size) {
+        finalBuffer = simpleCompressed;
+      } else {
+        finalBuffer = new Uint8Array(file.buffer);
       }
 
       const result: CompressionResult = {
         originalSize: file.size,
-        compressedSize: outputBuffer.length,
-        outputBuffer: outputBuffer,
+        compressedSize: finalBuffer.length,
+        outputBuffer: finalBuffer,
         filename: '',
       };
 
@@ -150,6 +167,11 @@ export class PdfCompressionService {
         },
       });
     }
+  }
+
+  private async compressSimple(buffer: Uint8Array): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.load(buffer);
+    return await pdfDoc.save({ useObjectStreams: true });
   }
 
   private getCompressionSettings(level: CompressionLevel): { scale: number; quality: number } {

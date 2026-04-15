@@ -178,7 +178,7 @@ export class PdfCompressionService {
     switch (level) {
       case 'maximum':
         // Always aggressive for scanned PDFs
-        return { scale: 1.0, quality: 0.7 };
+        return { scale: 0.75, quality: 0.6 };
       case 'recommended':
         // If simple didn't work, use aggressive to force reduction
         return { scale: 1.0, quality: 0.7 };

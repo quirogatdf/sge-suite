@@ -16,6 +16,10 @@ import { RouterLink } from '@angular/router';
           <span class="tool-name">Combinar PDFs</span>
           <span class="tool-desc">Une múltiples PDFs en uno solo</span>
         </a>
+        <a routerLink="/eliminar-paginas" class="tool-item">
+          <span class="tool-name">Eliminar Páginas</span>
+          <span class="tool-desc">Elimina páginas específicas de un PDF</span>
+        </a>
       </div>
     </div>
   `,

@@ -22,6 +22,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/pdf-merger/pdf-merger').then((m) => m.PdfMergerPage),
       },
+      {
+        path: 'eliminar-paginas',
+        loadComponent: () =>
+          import('./features/pdf-page-remover/pdf-page-remover').then(
+            (m) => m.PdfPageRemoverPage,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

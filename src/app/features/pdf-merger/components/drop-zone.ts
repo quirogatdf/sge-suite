@@ -1,9 +1,10 @@
-import { Component, signal, output } from '@angular/core';
+import { Component, signal, output, Input } from '@angular/core';
 import { MergeFileInput, MAX_MERGE_FILES, MAX_FILE_SIZE_MB } from '../models/pdf-merger.types';
 import { formatSize } from '../../../shared/utils/format-size';
 
 @Component({
   selector: 'app-merge-drop-zone',
+  imports: [],
   template: `
     <div
       class="drop-zone"
@@ -204,12 +205,12 @@ import { formatSize } from '../../../shared/utils/format-size';
 export class MergeDropZoneComponent {
   readonly filesChange = output<MergeFileInput[]>();
 
+  @Input() maxFiles: number = MAX_MERGE_FILES;
+  @Input() maxSizeMB: number = MAX_FILE_SIZE_MB;
+
   protected readonly files = signal<MergeFileInput[]>([]);
   protected readonly isDragover = signal(false);
   protected readonly error = signal<string | null>(null);
-
-  protected readonly maxFiles = MAX_MERGE_FILES;
-  protected readonly maxSizeMB = MAX_FILE_SIZE_MB;
 
   protected formatSize = formatSize;
 
